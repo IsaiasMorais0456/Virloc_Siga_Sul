@@ -2,7 +2,7 @@ import serial
 import time
 import re
 import threading
-from flask import Flask, render_template, jsonify, request
+from flask import Flask, render_template, jsonify, request, Response
 from functions import calcular_checksum_XVM, criar_pacote_XVM, interagir_com_virloc, escutar_porta_Virloc
 
 app = Flask(__name__)
@@ -27,6 +27,8 @@ def conectar():
     global conexao_serial, thread_escuta, id_msg_atual, estado_virloc # Variáveis globais para manter o estado da conexão, thread de escuta, ID da mensagem e estado do Virloc
     if conexao_serial and conexao_serial.is_open:
         return jsonify({"status": "erro", "msg": "Já conectado à porta."})
+    
+    historico_terminal.clear()  # Limpa o histórico do terminal ao conectar para começar com um log limpo
     
     try:
         # Abre a porta replicando o IOCTL_SERIAL_GET_LINE_CONTROL do XVM
@@ -97,9 +99,23 @@ def desconectar():
 
     return jsonify({"status": "erro", "msg": "Nenhuma conexão ativa"})
 
-@app.route('/logs', methods=['GET'])
+@app.route('/logs', methods=['GET']) # Rota para obter o histórico de logs do terminal, que inclui as mensagens enviadas e recebidas do Virloc
 def get_logs():
     return jsonify({"logs": historico_terminal})
+
+@app.route('/limpar_terminal', methods=['POST']) # Rota para limpar o histórico do terminal, removendo todas as mensagens exibidas
+def limpar_terminal():
+    historico_terminal.clear()  # Limpa o histórico do terminal
+    return jsonify({"status": "sucesso"})
+
+@app.route('/baixar_logs', methods=['GET']) # Rota para baixar o histórico de logs do terminal como um arquivo de texto, permitindo que o usuário salve as comunicações com o Virloc
+def baixar_logs():
+    texto_logs = "".join(historico_terminal)
+    return Response(
+        texto_logs,
+        mimetype="text/plain",
+        headers={"Content-Disposition": "attachment; filename=logs_virloc.txt"}
+    )
 
 if __name__ == '__main__':
     app.run(debug=True, use_reloader=False)

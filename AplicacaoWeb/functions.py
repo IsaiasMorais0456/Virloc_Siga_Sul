@@ -18,12 +18,12 @@ def criar_pacote_XVM(comando, id_dispositivo="XXXX", msg_id=0x8000):  #Função 
     return pacote_final
 
 
-def interagir_com_virloc(conexao, comando_cru, id_dispositivo, msg_id, lista_logs):
-    pacote_tx = criar_pacote_XVM(comando_cru, id_dispositivo, msg_id)
-    agora = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S.%f")[:-3]
+def interagir_com_virloc(conexao, comando_cru, id_dispositivo, msg_id, lista_logs): # Função que recebe o pacote criado e então envia ao virloc, e 
+    pacote_tx = criar_pacote_XVM(comando_cru, id_dispositivo, msg_id) 
+    agora = datetime.datetime.now().strftime("%d-%m %H:%M:%S.%f")[:-3]
 
-    log_msg = f"\n{agora} [TX] : {pacote_tx.strip()}"
-    print(log_msg)
+    log_msg = f"\n{agora} [TX] : {pacote_tx.strip()}" # Prepara a mensagem de log para exibir o pacote enviado, incluindo a data e hora do envio
+    print(log_msg) 
     lista_logs.append(log_msg)
 
     conexao.write(pacote_tx.encode('utf-8'))
@@ -40,7 +40,7 @@ def escutar_porta_Virloc(conexao, estado_virloc, lista_logs, controle_thread): #
                     mensagens = buffer_rx.split("\n")
                     for msg in mensagens:
                         if "<" in msg:
-                            agora_rx = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S.%f")[:-3]
+                            agora_rx = datetime.datetime.now().strftime("%d-%m %H:%M:%S.%f")[:-3]
                             log_msg = f"\n\n{agora_rx} [RX] : {msg.strip()}\n"
                             print(log_msg)
                             lista_logs.append(log_msg)

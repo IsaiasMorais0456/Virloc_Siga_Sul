@@ -1,0 +1,85 @@
+            body{ 
+                font-family: Arial, sans-serif; 
+                background-color: rgb(43, 41, 41);
+                padding: 20px; 
+            }
+            
+            button{
+                padding: 10px 20px; 
+                font-size:16px; 
+                cursor: pointer; 
+                border: none; 
+                border-radius: 
+                5px; color: white; 
+                font-weight: bold;
+            }
+
+            .btn-conectar{background-color: #1d7e34;}
+            .btn-conectar:hover{background-color: #0a4417;}
+            .btn-desconectar{background-color: #881e28;}
+            .btn-desconectar:hover{background-color: #4d0a14;}
+            .btn-logs{background-color: #007bff;}
+            .btn-logs:hover{background-color: #003f81;}
+            .btn-limpar{background-color: #6c757d;}
+            .btn-limpar:hover{background-color: #343a40;}
+            
+
+            #terminal{
+                background-color: black; 
+                color: rgb(255, 255, 255); 
+                padding: 10px; 
+                height: 400px; 
+                overflow-y: scroll; 
+                font-family: 'Courier New', Courier, monospace; 
+                font-size: 14px;
+                line-height: 1.4;
+                border-radius: 5px;
+                white-space: pre-wrap;
+                border-radius: 5px 5px 0 0;
+                margin-bottom: 0;
+            }
+
+            #header{
+                display: flex; 
+                gap: 10px; 
+                margin-bottom: 20px; 
+            }
+
+            #Titulo{
+                color: white;
+                font-family: 'Courier New', Courier, monospace;
+                font-size: 24px;
+                margin-bottom: 10px;
+            }
+
+            /* #Footer{
+                margin-top: 0; 
+                display: flex; 
+                background-color: black;
+                padding: 10px 15px;
+                border-radius: 0 0 5px 5px;
+                border-top: 1px solid #242323; 
+            } */
+
+            #digitar{
+                margin-top: 0; 
+                display: flex; 
+                background-color: black;
+                padding: 10px 15px;
+                border-radius: 0 0 5px 5px;
+                border-top: 1px solid #242323; 
+            }
+
+            #inputComando{
+                flex-grow: 1;
+                background-color: transparent;
+                color: white;
+                font-family: 'Courier New', Courier, monospace;
+                font-size: 16px;
+                border:none;
+                outline: none;
+            }
+
+            #inputComando::placeholder{
+                color: #555;
+            }
