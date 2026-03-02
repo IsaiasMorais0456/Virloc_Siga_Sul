@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+    <head>
+        <meta charset="UTF-8">
+        <title>Comunicação Virloc WEB</title>
+        <style>
+            body{ font-family: Arial, sans-serif; background-color: rgb(43, 41, 41);padding: 20px; }
+            
+            button{padding: 10px 20px; font-size:16px; cursor: pointer; border: none; border-radius: 5px; color: white; font-weight: bold;}
+            .btn-conectar{background-color: #1d7e34;}
+            .btn-desconectar{background-color: #881e28;}
+
+            #terminal{
+                background-color: black; 
+                color: rgb(255, 255, 255); 
+                padding: 10px; 
+                height: 400px; 
+                overflow-y: scroll; 
+                font-family: 'Courier New', Courier, monospace; 
+                font-size: 14px;
+                line-height: 1.4;
+                border-radius: 5px;
+                white-space: pre-wrap;
+                border-radius: 5px 5px 0 0;
+                margin-bottom: 0;
+            }
+
+            #header{
+                display: flex; 
+                gap: 10px; 
+                margin-bottom: 20px; 
+            }
+
+            #Titulo{
+                color: white;
+                font-family: 'Courier New', Courier, monospace;
+                font-size: 24px;
+                margin-bottom: 10px;
+            }
+
+            /* #Footer{
+                margin-top: 0; 
+                display: flex; 
+                background-color: black;
+                padding: 10px 15px;
+                border-radius: 0 0 5px 5px;
+                border-top: 1px solid #242323; 
+            } */
+
+            #digitar{
+                margin-top: 0; 
+                display: flex; 
+                background-color: black;
+                padding: 10px 15px;
+                border-radius: 0 0 5px 5px;
+                border-top: 1px solid #242323; 
+            }
+
+            #inputComando{
+                flex-grow: 1;
+                background-color: transparent;
+                color: white;
+                font-family: 'Courier New', Courier, monospace;
+                font-size: 16px;
+                border:none;
+                outline: none;
+            }
+
+            #inputComando::placeholder{
+                color: #555;
+            }
+        </style>
+    </head>
+
+    <body>
+        <div class="header"></div>
+            <div class="Titulo">
+                <h2>Comunicação Virloc WEB</h2>
+            </div>
+                <button class="btn-conectar" onclick="conectar()">Conectar</button>
+            <button class="btn-desconectar" onclick="desconectar()">Desconectar</button>
+        </div>
+
+        <div id="terminal"></div>
+
+        <div id="digitar">
+            <span style="color: white; font-family: 'Courier New', Courier, monospace; margin-right: 10px; font-size: 16px; font-weight: bold;">></span>
+            <input type="text" id="inputComando" placeholder="Digite o comando (ex: QID)">
+        </div>
+
+        <script>
+            function conectar(){
+                fetch('/conectar', { method: 'POST'})
+                .then(response => response.json())
+                .then(data =>{
+                    if(data.status === 'erro') alert("Erro: " + data.msg);
+                    else document.getElementById("terminal").innerHTML += data.msg + "\n";
+                });
+            }
+
+            let historicoComandos = [];
+            let historicoIndex = -1;
+
+            function enviarComando(){
+                const input = document.getElementById('inputComando');
+                const cmd = input.value.trim();
+
+            if (cmd !== "") {   
+                fetch('/enviar', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ comando: cmd })
+                }).then(() =>{
+                    atualizarTerminal();
+                });
+
+                if(historicoComandos[historicoComandos.length - 1] !== cmd){
+                    historicoComandos.push(cmd);
+                }
+            }
+                // input.value= "";
+                // input.select();
+                historicoIndex = historicoComandos.length;
+            
+            }
+
+            document.getElementById("inputComando").addEventListener("keydown",function(event){
+                if(event.key === "Enter"){
+                    enviarComando();
+                    this.select();
+                } else if(event.key ==="ArrowUp"){ // Permite navegar para cima no histórico de comandos
+                    event.preventDefault();
+
+                    if(historicoComandos.length === 0) return; // Se não houver comandos no histórico, não faz nada
+
+                    if (historicoIndex === historicoComandos.length) { // Se o índice estiver no final do histórico, verifica se o comando atual é diferente do último comando do histórico
+                       if (this.value === historicoComandos[historicoComandos.length - 1]) {
+                            historicoIndex = Math.max(0, historicoComandos.length - 2); // Move o índice para o último comando do histórico
+                    } else {
+                            historicoIndex = historicoComandos.length - 1; // Move o índice para o último comando do histórico
+                        }
+                    } else if (historicoIndex > 0){
+                        historicoIndex--;
+                    }
+
+                    this.value = historicoComandos[historicoIndex];
+                    
+                } else if(event.key === "ArrowDown"){ // Permite navegar para baixo no histórico de comandos
+                    event.preventDefault();
+                    if(historicoComandos.length > 0 && historicoIndex < historicoComandos.length - 1){
+                        historicoIndex++;
+                        this.value = historicoComandos[historicoIndex];
+                    } else {
+                        historicoIndex = historicoComandos.length;
+                        this.value = "";
+                    }
+                }      
+            });
+
+            function desconectar(){
+                fetch('/desconectar', { method: 'POST'})
+                .then(response => response.json())
+                .then(data =>{
+                    if(data.status === 'erro') alert("Erro: " + data.msg);
+                    else document.getElementById("terminal").innerHTML += data.msg + "\n";
+                });
+            }
+            
+            function atualizarTerminal(){
+                fetch('/logs')
+                .then(response => response.json())
+                .then(data => {
+                    const terminal = document.getElementById("terminal");
+
+                    const linhasFormatadas = data.logs.map(linha => {
+                        let linhaLimpa = linha.replace(/\n/g, '').trim();
+                        if(linhaLimpa === '') return '';
+
+                        let cor = 'white';
+                        if(linhaLimpa.includes('[TX]')){
+                            cor = '#28a745';
+                        } else if(linhaLimpa.includes('[RX]')){
+                            cor = '#17a2b8';
+                        }
+
+                        return `<div style="color: ${cor}; margin-bottom: 4px;">${linhaLimpa}</div>`;
+                    }).filter(linha => linha !== '');
+                    terminal.innerHTML = linhasFormatadas.join('');
+                    terminal.scrollTop = terminal.scrollHeight;
+                });
+            }
+
+            setInterval(atualizarTerminal, 300);
+        </script>
+    </body>
+</html>
